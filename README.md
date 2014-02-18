@@ -1,11 +1,16 @@
 # Apache Cassandra Chef Cookbook
 
-This is an OpsCode Chef cookbook for Apache Cassandra ([DataStax Community Edition](http://www.datastax.com/products/community)).
+This is an OpsCode Chef cookbook for Apache Cassandra ([DataStax
+Community Edition](http://www.datastax.com/products/community)) as
+well as DataStax Enterprise.
 
-It uses officially released Debian packages, provides Upstart service script. It has limited
-support for adjustment of Cassandra configuration parameters using Chef node attributes. The reason for
-that is it was created for CI and development environments. More attributes will be added over time,
-**feel free to contribute** what you find missing!
+It uses officially released packages and provides an Upstart service
+script. It has limited support for adjustment of Cassandra
+configuration parameters using Chef node attributes.
+
+It was originally created for CI and development environments. More
+attributes will be added over time, **feel free to contribute** what
+you find missing!
 
 
 ## Supported Apache Cassandra Version
@@ -14,10 +19,11 @@ This cookbook currently provides
 
  * Cassandra 2.0.x via tarballs
  * Cassandra 2.0.x or 1.2.x (DataStax Community Edition) via packages.
+ * DataStax Enterprise (DSE)
 
 ## Supported OS Distributions
 
- * Ubuntu 11.04 through 13.04 via DataStax apt repo.
+ * Ubuntu 11.04 through 13.10 via DataStax apt repo.
  * RHEL/CentOS via DataStax yum repo.
 
 ## Recipes
@@ -27,12 +33,18 @@ and thus can be used to provision any specific version.
 
 The latter uses DataStax repository via packages. You can install different versions (ex. dsc20 for v2.0) available in the repository by altering `:package_name` attribute (dsc12 by default).
 
-**RHEL only at the moment!**
+### DataStax Enterprise
+
+You can also install the DataStax Enterprise edition by adding `node[:cassandra][:dse]` attributes according to the datastax.rb.
+
 There are also two recipes for DataStax opscenter installation ( `opscenter_agent` and `opscenter_server` ) along with attributes available for override (see below).
 
 ### JNA Support
 
-The optional recipe cassandra::jna will install the jna.jar in the /usr/share/java/jna.jar, and create a symbolic link to it on #{cassandra.lib\_dir}/jna.jar, according to the DataStax documentation: http://www.datastax.com/documentation/cassandra/1.2/webhelp/cassandra/install/installJnaDeb.html
+The optional recipe cassandra::jna will install the jna.jar in the
+`/usr/share/java/jna.jar`, and create a symbolic link to it on
+`#{cassandra.lib\_dir}/jna.jar`, according to the [DataStax
+documentation](http://www.datastax.com/documentation/cassandra/1.2/webhelp/cassandra/install/installJnaDeb.html).
 
 ## Attributes
 
@@ -47,11 +59,13 @@ The optional recipe cassandra::jna will install the jna.jar in the /usr/share/ja
  * `node[:cassandra][:rpc_address]` (default: `localhost`): address to bind the RPC interface
 
  * `node[:cassandra][:opscenter][:server][:package_name]` (default: opscenter-free)
+ * `node[:cassandra][:opscenter][:server][:port]` (default: 8888)
+ * `node[:cassandra][:opscenter][:server][:interface]` (default: 0.0.0.0)
 
  * `node[:cassandra][:opscenter][:agent][:download_url]` (default: "") Required. You need to specify
  agent download url, because that could be different for each opscenter server version. ( S3 is a great
  place to store packages )
- * `node[:cassandra][:opscenter][:agent][:checksum]` (default: "") Required.
+ * `node[:cassandra][:opscenter][:agent][:checksum]` (default: `nil`)
  * `node[:cassandra][:opscenter][:agent][:install_dir]` (default: `/opt`)
  * `node[:cassandra][:opscenter][:agent][:install_folder_name]` (default: `opscenter_agent`)
  * `node[:cassandra][:opscenter][:agent][:binary_name]` (default: `opscenter-agent`) Introduced since Datastax changed agent binary name from opscenter-agent to datastax-agent. **Make sure to set it right if you are updating to 4.0.2**
