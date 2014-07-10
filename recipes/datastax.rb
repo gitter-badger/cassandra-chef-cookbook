@@ -46,28 +46,30 @@ end
 
 case node["platform_family"]
 when "debian"
-  
   if node['cassandra']['dse']
-    dse = node['cassandra']['dse']
-    if dse['credentials']['databag']
-      dse_credentials = Chef::EncryptedDataBagItem.load(dse['credentials']['databag']['name'], dse['credentials']['databag']['item'])[dse['credentials']['databag']['entry']]
+    dse = node.cassandra.dse
+    if dse.credentials.databag
+      dse_credentials = Chef::EncryptedDataBagItem.load(dse.credentials.databag.name, dse.credentials.databag.item)[dse.credentials.databag.entry]
     else
-      dse_credentials = dse['credentials']
+      dse_credentials = dse.credentials
     end
+
+    package "apt-transport-https"
+
     apt_repository "datastax" do
       uri          "http://#{dse_credentials['username']}:#{dse_credentials['password']}@debian.datastax.com/enterprise"
       distribution "stable"
       components   ["main"]
-      key          "https://debian.datastax.com/debian/repo_key"
+      key          "http://debian.datastax.com/debian/repo_key"
       action :add
     end
-  else 
+  else
     apt_repository "datastax" do
-      uri          "https://debian.datastax.com/community"
+      uri          "http://debian.datastax.com/community"
       distribution "stable"
       components   ["main"]
-      key          "https://debian.datastax.com/debian/repo_key"
-  
+      key          "http://debian.datastax.com/debian/repo_key"
+
       action :add
     end
 
@@ -78,12 +80,16 @@ when "debian"
     end
 
     # This is necessary because apt gets very confused by the fact that the
-    # latest package available for cassandra is 2.x while you're trying to 
+    # latest package available for cassandra is 2.x while you're trying to
     # install dsc12 which requests 1.2.x.
     if node[:platform_family] == "debian" then
       package "cassandra" do
         action :install
-        version node[:cassandra][:version]
+        version node.cassandra.version
+      end
+      apt_preference "cassandra" do
+        pin "version #{node.cassandra.version}"
+        pin_priority "700"
       end
     end
   end
@@ -98,28 +104,26 @@ when "rhel"
     action :create
   end
 
-end
+  yum_package "#{node.cassandra.package_name}" do
+    version "#{node.cassandra.version}-#{node.cassandra.release}"
+    allow_downgrade
+  end
 
-package "#{node[:cassandra][:package_name]}" do
-  action :install
 end
-
-# Define service above so chef doesn't complain
-# that there is no service to send notifications to
-service "cassandra"
 
 %w(cassandra.yaml cassandra-env.sh).each do |f|
-  template File.join(node["cassandra"]["conf_dir"], f) do
-    cookbook node["cassandra"]["templates_cookbook"]
+  template File.join(node.cassandra.conf_dir, f) do
+    cookbook node.cassandra.templates_cookbook
     source "#{f}.erb"
-    owner node["cassandra"]["user"]
-    group node["cassandra"]["user"]
+    owner node.cassandra.user
+    group node.cassandra.user
     mode  0644
-    notifies :restart, resources(:service => "cassandra")
+    notifies :restart, "service[cassandra]", :delayed
   end
 end
 
 service "cassandra" do
   supports :restart => true, :status => true
+  service_name node.cassandra.service_name
   action [:enable, :start]
 end
