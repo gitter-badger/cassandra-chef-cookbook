@@ -1,5 +1,7 @@
 # Apache Cassandra Chef Cookbook
 
+[![Join the chat at https://gitter.im/senseobservationsystems/cassandra-chef-cookbook](https://badges.gitter.im/senseobservationsystems/cassandra-chef-cookbook.svg)](https://gitter.im/senseobservationsystems/cassandra-chef-cookbook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This is an OpsCode Chef cookbook for Apache Cassandra ([DataStax
 Community Edition](http://www.datastax.com/products/community)) as
 well as DataStax Enterprise.
